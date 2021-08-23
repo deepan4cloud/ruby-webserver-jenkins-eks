@@ -10,21 +10,13 @@ pipeline { environment {
     }
 
     stages {
-        stage ('checkout') {
+        stage ('Git Checkout') {
             steps{
             git branch: 'master', credentialsId: 'githubcred', url: 'https://github.com/deepan4cloud/ruby-webserver-jenkins-eks.git'      
             }
         }
-/*
-        stage ('Image Build') {
-            steps{
-                sh """
-                  docker build -t httpserver .
-                """
-            }
-        }
-*/
-        stage('Building image') {
+
+        stage('Building Docker Image') {
             steps{
                 script {
                     dockerImage = docker.build registry + ":latest"
@@ -32,7 +24,7 @@ pipeline { environment {
             }
         }
 
-       stage('Image') {
+       stage('Pushing Docker Image to Dockerhub') {
             steps{    
                 script {
                     docker.withRegistry( '', registryCredential ) {
@@ -42,7 +34,7 @@ pipeline { environment {
             }
         }
 
-        stage ('K8S Deploy') {
+        stage ('Deploy application in K8S') {
             steps{
             kubernetesDeploy(
                 configs: 'Deployment/app-deployment.yaml',
